@@ -11,4 +11,9 @@ Students are expected to:
 Project description
 =====================================
 
-*Add your project description here*
+Name: Twitter Client App
+Team: ?
+Members:
+- Anh Phan Tran (kishimotovn) - USTHBI4-014
+- Duc Hong Nguyen - 
+- Minh Ngoc Phung
