@@ -19,8 +19,11 @@ import io.fabric.sdk.android.Fabric;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String TWITTER_KEY = "xUTgR6354Q5u2c8REbyG6gcjw";
-    private static final String TWITTER_SECRET = "rjgGNbZ49zxRivVwd0SMJAkkmsLsXXZesvykHvcDlAlYTeRCc6";
+//    private static final String TWITTER_KEY = "xUTgR6354Q5u2c8REbyG6gcjw";
+//    private static final String TWITTER_SECRET = "rjgGNbZ49zxRivVwd0SMJAkkmsLsXXZesvykHvcDlAlYTeRCc6";
+
+    private static final String TWITTER_KEY = "kZcCTzsuVujOYUfAX46RO4ckR";
+    private static final String TWITTER_SECRET = "ToZTn1CbWU6i0RtQEApBHPgq4oH4kcByDgoaZmumPJjCfxTUEp";
 
     public static final String KEY_USERNAME = "username";
     public static final String KEY_PROFILE_IMAGE_URL = "image_url";
@@ -50,6 +53,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void failure(TwitterException exception) {
                 Log.d("TwitterKit", "Login with Twitter failure", exception);
+                String msg = "TwitterKit" + " Login with Twitter failure! (#" + exception + ")";
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
             }
         });
     }
