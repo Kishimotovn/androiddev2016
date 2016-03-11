@@ -1,20 +1,20 @@
 package usth.tpa.twitterclient.Fragments;
 
-import android.support.v4.app.ListFragment;
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
+
+import com.twitter.sdk.android.tweetui.SearchTimeline;
+import com.twitter.sdk.android.tweetui.TweetTimelineListAdapter;
 
 import usth.tpa.twitterclient.MainActivity;
 import usth.tpa.twitterclient.R;
-import com.twitter.sdk.android.tweetui.TweetTimelineListAdapter;
-import com.twitter.sdk.android.tweetui.SearchTimeline;
-import com.twitter.sdk.android.tweetui.UserTimeline;
 
-public class TimeLineFragment extends ListFragment {
+public class SearchTimeLineFragment extends ListFragment {
+    SearchView mSearchView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -23,9 +23,11 @@ public class TimeLineFragment extends ListFragment {
         MainActivity activity = (MainActivity) getActivity();
 
         String username = activity.getUserName();
+        mSearchView = (SearchView) this.getView().findViewById(R.id.searchView);
 
-        final UserTimeline userTimeline = new UserTimeline.Builder()
-                .screenName(username)
+
+        final SearchTimeline userTimeline = new SearchTimeline.Builder()
+                .query(username)
                 .build();
         final TweetTimelineListAdapter adapter = new TweetTimelineListAdapter.Builder(activity)
                 .setTimeline(userTimeline)
@@ -36,6 +38,6 @@ public class TimeLineFragment extends ListFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_time_line, container, false);
+        return inflater.inflate(R.layout.fragment_user_time_line, container, false);
     }
 }
