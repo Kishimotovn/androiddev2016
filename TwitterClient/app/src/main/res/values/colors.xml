@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--Twitter color-->
+    <color name="twitter">#34B2E7</color>
+
+    <!--App colors-->
     <color name="colorPrimary">#1dcaff</color>
     <color name="colorPrimaryDark">#0084b4</color>
     <color name="colorAccent">#00aced</color>
+
+    <!-- Regular colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="dark_gray">#292929</color>
+    <color name="gray">#A9A9A9</color>
+    <color name="dim_gray">#696969</color>
+    <color name="light_gray">#BDBDBD</color>
+    <color name="extra_light_gray">#ffdbdbdb</color>
 </resources>

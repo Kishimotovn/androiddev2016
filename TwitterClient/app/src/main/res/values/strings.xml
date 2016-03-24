@@ -3,4 +3,15 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- API keys -->
+    <string name="twitter_api_consumer_key">kZcCTzsuVujOYUfAX46RO4ckR</string>
+    <string name="twitter_api_consumer_secret_key">ToZTn1CbWU6i0RtQEApBHPgq4oH4kcByDgoaZmumPJjCfxTUEp</string>
+
+    <!-- Connection dialogs -->
+    <string name="ok">Ok</string>
+    <string name="dialog_connection_title">No connection</string>
+    <string name="dialog_connection_description">We can not reach our servers at the moment.\n\nYou can always check you favorites and other items using the menu!</string>
+    <string name="dialog_internet_title">No internet</string>
+    <string name="dialog_internet_description">You seem to have no internet connection, this app requires internet to get the latest content.\n\nYou can continue to see your favorite/offline items!</string>
 </resources>

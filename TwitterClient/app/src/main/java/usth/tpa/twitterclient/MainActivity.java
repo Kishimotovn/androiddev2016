@@ -1,43 +1,48 @@
 package usth.tpa.twitterclient;
 
 import android.content.Intent;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.twitter.sdk.android.core.Callback;
-import com.twitter.sdk.android.core.Result;
-import com.twitter.sdk.android.core.TwitterException;
-import com.twitter.sdk.android.core.models.Tweet;
-import com.twitter.sdk.android.tweetui.TimelineResult;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 
-import it.neokree.materialtabs.MaterialTab;
-import it.neokree.materialtabs.MaterialTabHost;
-import it.neokree.materialtabs.MaterialTabListener;
-import usth.tpa.twitterclient.Fragments.CollectionFragment;
-import usth.tpa.twitterclient.Fragments.SearchTimeLineFragment;
 import usth.tpa.twitterclient.Fragments.SmartFragmentStatePagerAdapter;
-import usth.tpa.twitterclient.Fragments.UserTimeLineFragment;
+import usth.tpa.twitterclient.Fragments.TweetsFragment;
+import usth.tpa.twitterclient.Helpers.VolleySingleton;
 
-public class MainActivity extends AppCompatActivity implements MaterialTabListener {
+public class MainActivity extends AppCompatActivity {
 
     private String userName = "";
-    private TabPagerAdapter adapterViewPager;
-    private ViewPager viewPager;
-    MaterialTabHost tabHost;
-    ListFragment currentFragment;
     static SwipeRefreshLayout swipeLayout;
+    public static String DATA = "transaction_data";
+
+    //Image Loader object
+    private ImageLoader imageLoader;
+
+    //NetworkImageView Ojbect
+    private NetworkImageView profileImage;
+    private NetworkImageView bannerImage;
+
+    //TextView object
+    private TextView textViewUsername;
+    private ViewPager viewPager;
+
+    private MyPagerAdapter adapterViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        profileImage = (NetworkImageView) findViewById(R.id.profileImage);
+        textViewUsername = (TextView) findViewById(R.id.userName);
+        bannerImage = (NetworkImageView) findViewById(R.id.bannerImage);
 
         Intent intent = getIntent();
 
@@ -45,68 +50,52 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
         userName = intent.getStringExtra(LoginActivity.KEY_USERNAME);
         String profileImageUrl = intent.getStringExtra(LoginActivity.KEY_PROFILE_IMAGE_URL);
 
-        adapterViewPager = new TabPagerAdapter(getSupportFragmentManager());
+        //Loading image
+        imageLoader = VolleySingleton.getInstance(this).getImageLoader();
+        imageLoader.get(profileImageUrl, ImageLoader.getImageListener(profileImage, R.mipmap.ic_launcher, android.R.drawable.ic_dialog_alert), 0, 0, ImageView.ScaleType.CENTER);
+        profileImage.setImageUrl(profileImageUrl, imageLoader);
+
+        if (intent.getStringArrayExtra(LoginActivity.KEY_BANNER_IMAGE_URL) != null) {
+            String bannerImageURL = intent.getStringExtra(LoginActivity.KEY_BANNER_IMAGE_URL);
+
+            imageLoader.get(bannerImageURL, ImageLoader.getImageListener(bannerImage, R.mipmap.ic_launcher, android.R.drawable.ic_dialog_alert), 0, 0, ImageView.ScaleType.CENTER);
+            bannerImage.setImageUrl(bannerImageURL, imageLoader);
+        }
+
+        //Setting the username in textview
+        textViewUsername.setText("@" + userName);
+        Bundle bundle = new Bundle();
+        bundle.putString(DATA, userName);
+
         viewPager = (ViewPager) findViewById(R.id.pager);
-        tabHost = (MaterialTabHost) this.findViewById(R.id.materialTabHost);
-
-        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
-
-        viewPager.addOnPageChangeListener(
-                new ViewPager.SimpleOnPageChangeListener() {
-                    @Override
-                    public void onPageSelected(int position) {
-                        super.onPageSelected(position);
-
-                        tabHost.setSelectedNavigationItem(position);
-                    }
-                }
-        );
+        adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
+        adapterViewPager.mArguments = bundle;
 
         viewPager.setAdapter(adapterViewPager);
 
-        tabHost.addTab(
-                tabHost.newTab()
-                        .setText(userName)
-                        .setTabListener(this)
-        );
 
-        tabHost.addTab(
-                tabHost.newTab()
-                        .setText("search #naruto")
-                        .setTabListener(this)
-        );
-
-        tabHost.addTab(
-                tabHost.newTab()
-                        .setText("fabric collection")
-                        .setTabListener(this)
-        );
-    }
-
-    @Override
-    public void onTabSelected(MaterialTab tab) {
-        viewPager.setCurrentItem(tab.getPosition());
-    }
-
-    @Override
-    public void onTabReselected(MaterialTab tab) {
-
-    }
-
-    @Override
-    public void onTabUnselected(MaterialTab tab) {
-
+        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
     }
 
     public String getUserName() {
         return userName;
     }
 
-    public static class TabPagerAdapter extends SmartFragmentStatePagerAdapter<ListFragment> {
-        private static int NUM_ITEMS = 3;
+    public static class MyPagerAdapter extends SmartFragmentStatePagerAdapter<TweetsFragment> {
+        private static int NUM_ITEMS = 2;
 
-        public TabPagerAdapter(FragmentManager fragmentManager) {
+        public MyPagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
+        }
+
+        private Bundle mArguments;
+
+        public void setArguments(Bundle bundle) {
+            mArguments = bundle;
+        }
+
+        public Bundle getArguments() {
+            return mArguments;
         }
 
         // Returns total number of pages
@@ -117,71 +106,13 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
 
         // Returns the fragment to display for that page
         @Override
-        public ListFragment getItem(int position) {
+        public TweetsFragment getItem(int position) {
             switch (position) {
                 case 0: // Fragment # 0 - This will show FirstFragment
-                    final ListFragment newOne = new UserTimeLineFragment();
-                    swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                        @Override
-                        public void onRefresh() {
-                            swipeLayout.setRefreshing(true);
-
-                            ((UserTimeLineFragment)newOne).adapter.refresh(new Callback<TimelineResult<Tweet>>() {
-                                @Override
-                                public void success(Result<TimelineResult<Tweet>> result) {
-                                    swipeLayout.setRefreshing(false);
-                                }
-
-                                @Override
-                                public void failure(TwitterException exception) {
-                                    Log.d("TwitterKit", "Cant refresh", exception);
-                                }
-                            });
-                        }
-                    });
-                    return newOne;
+                    String username = this.getArguments().getString(MainActivity.DATA);
+                    return TweetsFragment.newInstance(username);
                 case 1: // Fragment # 0 - This will show FirstFragment different title
-                    final ListFragment newSearchFragment = new SearchTimeLineFragment();
-                    swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                        @Override
-                        public void onRefresh() {
-                            swipeLayout.setRefreshing(true);
-
-                            ((SearchTimeLineFragment)newSearchFragment).adapter.refresh(new Callback<TimelineResult<Tweet>>() {
-                                @Override
-                                public void success(Result<TimelineResult<Tweet>> result) {
-                                    swipeLayout.setRefreshing(false);
-                                }
-
-                                @Override
-                                public void failure(TwitterException exception) {
-                                    Log.d("TwitterKit", "Cant refresh", exception);
-                                }
-                            });
-                        }
-                    });
-                    return newSearchFragment;
-                case 2:
-                    final ListFragment newCollectionFragment = new CollectionFragment();
-                    swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                        @Override
-                        public void onRefresh() {
-                            swipeLayout.setRefreshing(true);
-
-                            ((CollectionFragment)newCollectionFragment).adapter.refresh(new Callback<TimelineResult<Tweet>>() {
-                                @Override
-                                public void success(Result<TimelineResult<Tweet>> result) {
-                                    swipeLayout.setRefreshing(false);
-                                }
-
-                                @Override
-                                public void failure(TwitterException exception) {
-                                    Log.d("TwitterKit", "Cant refresh", exception);
-                                }
-                            });
-                        }
-                    });
-                    return newCollectionFragment;
+                    return TweetsFragment.newInstance("naruto");
                 default:
                     return null;
             }
@@ -194,5 +125,4 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
         }
 
     }
-
 }

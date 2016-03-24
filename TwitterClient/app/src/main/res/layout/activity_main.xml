@@ -10,21 +10,43 @@
     android:paddingTop="0dip"
     tools:context="usth.tpa.twitterclient.MainActivity"
     android:orientation="vertical">
-    <it.neokree.materialtabs.MaterialTabHost
-        android:id="@+id/materialTabHost"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        app:textColor="#FFFFFF"
-        app:primaryColor="#1dcaff"
-        app:accentColor="#00aced" />
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/swipe_layout">
-    <android.support.v4.view.ViewPager
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    </android.support.v4.widget.SwipeRefreshLayout>
+        android:layout_height="150dip"
+        android:background="@color/tw__blue_default">
+        <com.android.volley.toolbox.NetworkImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:id="@+id/bannerImage"/>
+        <com.android.volley.toolbox.NetworkImageView
+            android:layout_width="100dip"
+            android:layout_height="100dip"
+            android:background="@color/tw__medium_gray"
+            android:layout_marginLeft="20dp"
+            android:scaleType="center"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/profileImage"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:layout_toRightOf="@+id/profileImage"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="30dip"
+            android:layout_marginLeft="20dip"
+            android:textSize="20dp"
+            android:textColor="@color/white"
+            android:id="@+id/userName"/>
+    </RelativeLayout>
+
+    <!--<android.support.v4.widget.SwipeRefreshLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:id="@+id/swipe_layout">-->
+        <android.support.v4.view.ViewPager
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/pager"/>
+    <!--</android.support.v4.widget.SwipeRefreshLayout>-->
 </LinearLayout>

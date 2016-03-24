@@ -27,6 +27,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public static final String KEY_USERNAME = "username";
     public static final String KEY_PROFILE_IMAGE_URL = "image_url";
+    public static final String KEY_BANNER_IMAGE_URL = "banner_url";
 
     private TwitterLoginButton loginButton;
 
@@ -89,11 +90,18 @@ public class LoginActivity extends AppCompatActivity {
                         //If it succeeds creating a User object from userResult.data
                         User user = userResult.data;
 
+                        //Creating an Intent
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+
                         //Getting the profile image url
                         String profileImage = user.profileImageUrl.replace("_normal", "");
 
-                        //Creating an Intent
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        if (user.profileBannerUrl != null) {
+                            String bannerImage = user.profileBannerUrl.replace("_normal", "");
+                            Log.i("GettingUserInfo", bannerImage);
+
+                            intent.putExtra(KEY_BANNER_IMAGE_URL, bannerImage);
+                        }
 
                         //Adding the values to intent
                         intent.putExtra(KEY_USERNAME,username);
