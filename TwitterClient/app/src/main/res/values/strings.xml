@@ -10,6 +10,7 @@
 
     <!-- Connection dialogs -->
     <string name="ok">Ok</string>
+    <string name="already_loading">We are already loading some new content!</string>
     <string name="dialog_connection_title">No connection</string>
     <string name="dialog_connection_description">We can not reach our servers at the moment.\n\nYou can always check you favorites and other items using the menu!</string>
     <string name="dialog_internet_title">No internet</string>

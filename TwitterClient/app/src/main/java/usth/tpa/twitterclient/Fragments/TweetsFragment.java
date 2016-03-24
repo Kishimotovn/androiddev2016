@@ -19,12 +19,18 @@ import usth.tpa.twitterclient.Models.Tweet;
 import usth.tpa.twitterclient.Models.TweetAdapter;
 import usth.tpa.twitterclient.Helpers.Helper;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,6 +47,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.twitter.sdk.android.tweetcomposer.TweetUploadService;
+
 /**
  *  This activity is used to display a list of tweets
  */
@@ -54,6 +62,7 @@ public class TweetsFragment extends Fragment {
     ArrayList<Tweet> tweets;
 
     private TextView pDialog;
+    private MyResultReceiver mResultReceiver;
     Activity mAct;
 
     String searchValue;
@@ -65,6 +74,8 @@ public class TweetsFragment extends Fragment {
 
     Boolean initialload = true;
     Boolean isLoading = true;
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     @SuppressLint("InflateParams")
     @Override
@@ -80,10 +91,10 @@ public class TweetsFragment extends Fragment {
                                  int visibleItemCount, int totalItemCount) {
 
                 if (tweetAdapter == null)
-                    return ;
+                    return;
 
                 if (tweetAdapter.getCount() == 0)
-                    return ;
+                    return;
 
                 int l = visibleItemCount + firstVisibleItem;
                 if (l >= totalItemCount && !isLoading) {
@@ -94,10 +105,48 @@ public class TweetsFragment extends Fragment {
             }
 
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {}
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
         });
-        return ll;
 
+        mSwipeRefreshLayout = new ListFragmentSwipeRefreshLayout(container.getContext());
+
+        // Add the list fragment's content view to the SwipeRefreshLayout, making sure that it fills
+        // the SwipeRefreshLayout
+        mSwipeRefreshLayout.addView(ll,
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        // Make sure that the SwipeRefreshLayout will fill the fragment
+        mSwipeRefreshLayout.setLayoutParams(
+                new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+
+        // Now return the SwipeRefreshLayout as this fragment's content view
+
+        setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (!isLoading){
+                    initialload = true;
+                    isLoading = true;
+                    latesttweetid = null;
+                    tweets.clear();
+                    listView.setAdapter(null);
+                    new SearchTweetsTask().execute(searchValue);
+                } else {
+                    Toast.makeText(mAct, getString(R.string.already_loading), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        mResultReceiver = new MyResultReceiver();
+
+        return mSwipeRefreshLayout;
+    }
+
+    public void setOnRefreshListener(SwipeRefreshLayout.OnRefreshListener listener) {
+        mSwipeRefreshLayout.setOnRefreshListener(listener);
     }
 
     public static TweetsFragment newInstance(String data) {
@@ -113,6 +162,65 @@ public class TweetsFragment extends Fragment {
         new SearchTweetsTask().execute(searchValue);
     }
 
+    private class ListFragmentSwipeRefreshLayout extends SwipeRefreshLayout {
+
+        public ListFragmentSwipeRefreshLayout(Context context) {
+            super(context);
+        }
+
+        /**
+         * As mentioned above, we need to override this method to properly signal when a
+         * 'swipe-to-refresh' is possible.
+         *
+         * @return true if the {@link android.widget.ListView} is visible and can scroll up.
+         */
+        @Override
+        public boolean canChildScrollUp() {
+//            final ListView listView = getListView();
+            if (listView.getVisibility() == View.VISIBLE) {
+                return canListViewScrollUp(listView);
+            } else {
+                return false;
+            }
+        }
+
+    }
+
+
+    public class MyResultReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (TweetUploadService.UPLOAD_SUCCESS.equals(intent.getAction())) {
+                // success
+                if (!isLoading){
+                    initialload = true;
+                    isLoading = true;
+                    latesttweetid = null;
+                    tweets.clear();
+                    listView.setAdapter(null);
+                    new SearchTweetsTask().execute(searchValue);
+                } else {
+                    Toast.makeText(mAct, getString(R.string.already_loading), Toast.LENGTH_LONG).show();
+                }
+            } else {
+                // failure
+                Toast.makeText(getActivity(), "Nope, not tweeted shit cuz of shitty network!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private static boolean canListViewScrollUp(ListView listView) {
+        if (android.os.Build.VERSION.SDK_INT >= 14) {
+            // For ICS and above we can call canScrollVertically() to determine this
+            return ViewCompat.canScrollVertically(listView, -1);
+        } else {
+            // Pre-ICS we need to manually check the first visible item and the child view's top
+            // value
+            return listView.getChildCount() > 0 &&
+                    (listView.getFirstVisiblePosition() > 0
+                            || listView.getChildAt(0).getTop() < listView.getPaddingTop());
+        }
+    }
 //    @Override
 //    public boolean onOptionsItemSelected(MenuItem item) {
 //        switch (item.getItemId()) {
@@ -131,6 +239,9 @@ public class TweetsFragment extends Fragment {
 //                return super.onOptionsItemSelected(item);
 //        }
 //    }
+    public void setRefreshing(boolean refreshing) {
+    mSwipeRefreshLayout.setRefreshing(refreshing);
+}
 
     public void updateList() {
         if (initialload){
@@ -142,6 +253,7 @@ public class TweetsFragment extends Fragment {
             tweetAdapter.notifyDataSetChanged();
         }
         isLoading = false;
+        setRefreshing(false);
     }
 
     //Connect to twitter api and get values.

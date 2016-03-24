@@ -1,16 +1,26 @@
 package usth.tpa.twitterclient;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.twitter.sdk.android.core.TwitterCore;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.tweetcomposer.ComposerActivity;
+import com.twitter.sdk.android.tweetcomposer.TweetComposer;
+import com.twitter.sdk.android.tweetcomposer.TweetUploadService;
 
 import usth.tpa.twitterclient.Fragments.SmartFragmentStatePagerAdapter;
 import usth.tpa.twitterclient.Fragments.TweetsFragment;
@@ -19,11 +29,12 @@ import usth.tpa.twitterclient.Helpers.VolleySingleton;
 public class MainActivity extends AppCompatActivity {
 
     private String userName = "";
-    static SwipeRefreshLayout swipeLayout;
+    //static SwipeRefreshLayout swipeLayout;
     public static String DATA = "transaction_data";
 
     //Image Loader object
     private ImageLoader imageLoader;
+    ImageButton FAB;
 
     //NetworkImageView Ojbect
     private NetworkImageView profileImage;
@@ -73,8 +84,20 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager.setAdapter(adapterViewPager);
 
+        FAB = (ImageButton) findViewById(R.id.imageButton);
+        FAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Clicked", Toast.LENGTH_SHORT).show();
 
-        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
+                final TwitterSession session = TwitterCore.getInstance().getSessionManager()
+                        .getActiveSession();
+                final Intent intent = new ComposerActivity.Builder(MainActivity.this)
+                        .session(session)
+                        .createIntent();
+                startActivity(intent);
+            }
+        });
     }
 
     public String getUserName() {

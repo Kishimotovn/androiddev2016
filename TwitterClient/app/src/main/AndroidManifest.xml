@@ -5,6 +5,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
+    <receiver
+        android:name=".MyResultReceiver"
+        android:exported="false">
+        <intent-filter>
+            <action android:name="com.twitter.sdk.android.tweetcomposer.UPLOAD_SUCCESS"/>
+            <action android:name="com.twitter.sdk.android.tweetcomposer.UPLOAD_FAILURE"/>
+        </intent-filter>
+    </receiver>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
